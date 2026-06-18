@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
-import logo from '../assets/logo.png'
+import logo from '../assets/logo.svg'
 
 type PublicLayoutProps = {
   cartCount: number

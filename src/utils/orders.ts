@@ -15,9 +15,7 @@ export const saveOrder = async (
       customerInfo: customer,
       items: items.map((item) => ({
         productId: item.product.id,
-        productName: item.product.name,
         quantity: item.quantity,
-        unitPrice: item.product.price,
       })),
     }),
   })

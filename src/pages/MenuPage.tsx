@@ -12,6 +12,7 @@ type MenuPageProps = {
   onCategoryChange: (category: string) => void
   onSearchChange: (value: string) => void
   onAdd: (product: Product) => void
+  onBuyNow: (product: Product) => void
   onIncrement: (productId: string) => void
   onDecrement: (productId: string) => void
 }
@@ -27,6 +28,7 @@ export function MenuPage({
   onCategoryChange,
   onSearchChange,
   onAdd,
+  onBuyNow,
   onIncrement,
   onDecrement,
 }: MenuPageProps) {
@@ -77,6 +79,7 @@ export function MenuPage({
                 product={product}
                 quantity={quantityByProductId.get(product.id) ?? 0}
                 onAdd={onAdd}
+                onBuyNow={onBuyNow}
                 onIncrement={onIncrement}
                 onDecrement={onDecrement}
               />

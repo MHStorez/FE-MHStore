@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import './App.css'
 import { AdminOrders } from './components/AdminOrders'
 import { PaymentResult } from './components/PaymentResult'
@@ -12,49 +12,19 @@ import { CartPage } from './pages/CartPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { MenuPage } from './pages/MenuPage'
+import { ProductDetailPage } from './pages/ProductDetailPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import type { CartItem, CustomerInfo, Product } from './types'
+import { fetchProducts } from './utils/products'
 
 const rawApiBaseUrl = import.meta.env.VITE_API_URL ?? ''
 const apiBaseUrl = rawApiBaseUrl.replace(/\/$/, '')
-const zaloPhone = import.meta.env.VITE_ZALO_PHONE ?? '0900000000'
-
-const fallbackProducts: Product[] = [
-  {
-    id: 'sample-cha-ram',
-    name: 'Cha ram tom dat',
-    description: 'Goi dong lanh, chien nhanh la gion.',
-    price: 120000,
-    imageUrl:
-      'https://images.unsplash.com/photo-1604908177522-0403f218842b?auto=format&fit=crop&w=900&q=80',
-    category: 'Mon chinh',
-    isAvailable: true,
-  },
-  {
-    id: 'sample-nem-chua',
-    name: 'Nem chua ran',
-    description: 'Hop tien loi cho bua an vat tai nha.',
-    price: 65000,
-    imageUrl:
-      'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80',
-    category: 'An vat',
-    isAvailable: true,
-  },
-  {
-    id: 'sample-ca-vien',
-    name: 'Ca vien chien',
-    description: 'Dong goi san, phu hop chien hoac tha lau.',
-    price: 45000,
-    imageUrl:
-      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80',
-    category: 'An vat',
-    isAvailable: true,
-  },
-]
+const zaloPhone = import.meta.env.VITE_ZALO_PHONE ?? '0334140131'
 
 function App() {
-  const [products, setProducts] = useState<Product[]>(fallbackProducts)
+  const navigate = useNavigate()
+  const [products, setProducts] = useState<Product[]>([])
   const [selectedCategory, setSelectedCategory] = useState('Tat ca')
   const [searchQuery, setSearchQuery] = useState('')
   const [cartItems, setCartItems] = useState<CartItem[]>([])
@@ -71,31 +41,22 @@ function App() {
     let isMounted = true
 
     const loadProducts = async () => {
+      setIsLoading(true)
+      setApiNotice('')
+
       try {
-        const response = await fetch(`${apiBaseUrl}/api/products`)
-
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`)
-        }
-
-        const apiProducts = (await response.json()) as Product[]
+        const apiProducts = await fetchProducts(apiBaseUrl)
 
         if (!isMounted) {
           return
         }
 
-        if (apiProducts.length === 0) {
-          setProducts(fallbackProducts)
-          setApiNotice('API chua co san pham, dang hien thi du lieu mau.')
-          return
-        }
-
         setProducts(apiProducts)
-        setApiNotice('')
+        setApiNotice(apiProducts.length === 0 ? 'Menu hien chua co mon dang ban.' : '')
       } catch {
         if (isMounted) {
-          setProducts(fallbackProducts)
-          setApiNotice('Chua ket noi duoc API, dang hien thi du lieu mau.')
+          setProducts([])
+          setApiNotice('Chua ket noi duoc API. Vui long kiem tra backend.')
         }
       } finally {
         if (isMounted) {
@@ -139,6 +100,11 @@ function App() {
     return new Map(cartItems.map((item) => [item.product.id, item.quantity]))
   }, [cartItems])
 
+  const cartCount = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    [cartItems],
+  )
+
   const addToCart = (product: Product) => {
     toast.success(`Da them ${product.name} vao gio`)
     setCartItems((currentItems) => {
@@ -156,6 +122,12 @@ function App() {
 
       return [...currentItems, { product, quantity: 1 }]
     })
+  }
+
+  const buyNow = (product: Product) => {
+    setCartItems([{ product, quantity: 1 }])
+    toast.success(`Da chon ${product.name}`)
+    navigate('/cart')
   }
 
   const incrementCartItem = (productId: string) => {
@@ -195,7 +167,7 @@ function App() {
 
   return (
     <Routes>
-      <Route element={<PublicLayout cartCount={cartItems.length} zaloPhone={zaloPhone} />}>
+      <Route element={<PublicLayout cartCount={cartCount} zaloPhone={zaloPhone} />}>
         <Route index element={<HomePage />} />
         <Route
           path="menu"
@@ -211,6 +183,20 @@ function App() {
               onCategoryChange={setSelectedCategory}
               onSearchChange={setSearchQuery}
               onAdd={addToCart}
+              onBuyNow={buyNow}
+              onIncrement={incrementCartItem}
+              onDecrement={decrementCartItem}
+            />
+          }
+        />
+        <Route
+          path="menu/:productId"
+          element={
+            <ProductDetailPage
+              apiBaseUrl={apiBaseUrl}
+              quantityByProductId={quantityByProductId}
+              onAdd={addToCart}
+              onBuyNow={buyNow}
               onIncrement={incrementCartItem}
               onDecrement={decrementCartItem}
             />

@@ -44,6 +44,16 @@ export const fetchProducts = async (
   return (await response.json()) as Product[]
 }
 
+export const fetchProduct = async (apiBaseUrl: string, productId: string) => {
+  const response = await fetch(`${apiBaseUrl}/api/products/${productId}`)
+
+  if (!response.ok) {
+    throw new Error(`Product API returned ${response.status}`)
+  }
+
+  return (await response.json()) as Product
+}
+
 export const createProduct = async (
   apiBaseUrl: string,
   payload: ProductPayload,

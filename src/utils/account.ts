@@ -31,12 +31,11 @@ export const register = async (
   username: string,
   password: string,
   fullName: string,
-  role = 'Customer',
 ) => {
   const response = await fetch(`${apiBaseUrl}/api/account/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password, fullName, role }),
+    body: JSON.stringify({ username, password, fullName }),
   })
 
   if (!response.ok) {

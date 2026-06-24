@@ -37,8 +37,18 @@ export function Cart({
   )
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
+  const validateCustomer = () => {
+    if (!customer.name.trim() || !customer.phone.trim() || !customer.address.trim()) {
+      toast.error('Vui long nhap ten, so dien thoai va dia chi giao hang')
+      setCheckoutMessage('Vui long nhap ten, so dien thoai va dia chi giao hang.')
+      return false
+    }
+
+    return true
+  }
+
   const handleOrder = async () => {
-    if (items.length === 0 || isSubmitting) {
+    if (items.length === 0 || isSubmitting || !validateCustomer()) {
       return
     }
 
@@ -69,7 +79,7 @@ export function Cart({
   }
 
   const handleOnlinePayment = async () => {
-    if (items.length === 0 || isSubmitting) {
+    if (items.length === 0 || isSubmitting || !validateCustomer()) {
       return
     }
 
@@ -150,7 +160,7 @@ export function Cart({
           <input
             value={customer.phone}
             onChange={(event) => onCustomerChange('phone', event.target.value)}
-            placeholder="090..."
+            placeholder="0334140131"
           />
         </label>
         <label>

@@ -1,6 +1,18 @@
 import { getAuthToken } from './auth'
 
-export type BestSellingProduct = {
+export type AdminStats = {
+  todayRevenue: number
+  newOrderCount: number
+  pendingOrderCount: number
+  completedOrderCount: number
+  totalOrderCount: number
+  totalRevenue: number
+  bestSellingProduct?: ProductSummary | null
+  topProducts: ProductSummary[]
+  topCustomers: CustomerSummary[]
+}
+
+export type ProductSummary = {
   productId: string
   productName: string
   quantitySold: number
@@ -13,18 +25,6 @@ export type CustomerSummary = {
   orderCount: number
   totalSpent: number
   lastOrderAt: string
-}
-
-export type AdminStats = {
-  todayRevenue: number
-  newOrderCount: number
-  pendingOrderCount: number
-  completedOrderCount: number
-  totalOrderCount: number
-  totalRevenue: number
-  bestSellingProduct?: BestSellingProduct | null
-  topProducts: BestSellingProduct[]
-  topCustomers: CustomerSummary[]
 }
 
 export const fetchAdminStats = async (apiBaseUrl: string) => {

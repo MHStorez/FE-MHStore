@@ -11,6 +11,7 @@ export const createOrderMessage = (
   items: CartItem[],
   customer: CustomerInfo,
   total: number,
+  orderId?: string,
 ) => {
   const orderLines = items.map(
     (item) =>
@@ -28,6 +29,7 @@ export const createOrderMessage = (
 
   const message = [
     '🛒 ĐƠN HÀNG MỚI TỪ MHSTORE',
+    orderId ? `Mã đơn: #${orderId.slice(0, 8).toUpperCase()}` : null,
     '-------------------------',
     ...orderLines,
     '-------------------------',
@@ -40,7 +42,7 @@ export const createOrderMessage = (
     '( ) Chuyển khoản (Gửi kèm bill)',
     '( ) Tiền mặt khi nhận hàng (COD)',
     '',
-    'Cảm ơn shop!'
+    'Cảm ơn shop!',
   ]
     .filter((line) => line !== null)
     .join('\n')

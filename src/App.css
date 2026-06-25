@@ -704,9 +704,21 @@
   color: #0284c7;
 }
 
-.status-pill.paymentfailed {
+.status-pill.paymentfailed,
+.status-pill.payment-failed {
   background: #fee2e2;
   color: #7e14ff;
+}
+
+.status-pill.processing,
+.status-pill.payment-paid {
+  background: #e8f7ec;
+  color: #0284c7;
+}
+
+.status-pill.payment-pending {
+  background: #fff8e8;
+  color: #9a5f00;
 }
 
 .order-detail-grid {
@@ -910,7 +922,9 @@
 }
 
 .owner-product-form input,
-.owner-product-form textarea {
+.owner-product-form textarea,
+.owner-product-form select,
+.buy-now-form select {
   width: 100%;
   border: 1px solid #d8ccff;
   border-radius: 8px;
@@ -946,6 +960,46 @@
 .owner-product-check input {
   width: 18px;
   height: 18px;
+}
+
+.image-mode-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.image-mode-toggle button {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.image-mode-toggle button.active {
+  background: var(--mh-primary, #0284c7);
+  color: #ffffff;
+}
+
+.owner-product-form small {
+  color: #68625c;
+  font-weight: 700;
+}
+
+.image-preview {
+  display: grid;
+  gap: 8px;
+}
+
+.image-preview span {
+  color: #3a2d29;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.image-preview img {
+  width: 100%;
+  max-height: 220px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #e6ece7;
 }
 
 .owner-product-list {
@@ -1011,6 +1065,73 @@
 .owner-product-actions button:last-child {
   background: #fee2e2;
   color: #7e14ff;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(36, 22, 17, 0.5);
+}
+
+.buy-now-modal {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border: 1px solid var(--mh-border, #d9ccff);
+  border-radius: 12px;
+  background: var(--mh-surface, #ffffff);
+  box-shadow: 0 24px 60px rgba(36, 22, 17, 0.24);
+}
+
+.buy-now-header,
+.buy-now-product {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-bottom: 1px solid var(--mh-border, #eee8de);
+}
+
+.buy-now-header {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.buy-now-header span {
+  color: var(--mh-primary, #7e14ff);
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.buy-now-header h2 {
+  margin: 4px 0 0;
+}
+
+.buy-now-product img {
+  width: 112px;
+  height: 112px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.buy-now-product > div {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+}
+
+.buy-now-product strong,
+.buy-now-product span {
+  display: block;
+}
+
+.buy-now-product span {
+  color: var(--mh-primary, #7e14ff);
+  font-weight: 900;
 }
 
 .payment-result-shell {
@@ -1104,6 +1225,7 @@ a:hover {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
+select:focus-visible,
 textarea:focus-visible {
   outline: 3px solid rgba(0, 104, 255, 0.24);
   outline-offset: 2px;

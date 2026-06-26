@@ -33,7 +33,7 @@ export function AdminDashboard({ apiBaseUrl }: AdminDashboardProps) {
         }
       } catch {
         if (isMounted) {
-          setNotice('Chưa tải được thống kê. Kiểm tra đăng nhập chủ quán và backend.')
+          setNotice('Chua tai duoc thong ke. Kiem tra dang nhap chu quan va backend.')
         }
       } finally {
         if (isMounted) {
@@ -49,101 +49,94 @@ export function AdminDashboard({ apiBaseUrl }: AdminDashboardProps) {
     }
   }, [apiBaseUrl])
 
-  const topCustomers = stats?.topCustomers ?? []
-  const topProducts = stats?.topProducts ?? []
-
   return (
     <main className="admin-shell">
       <section className="admin-heading">
         <div>
           <span>Dashboard</span>
-          <h1>Tổng quan bán hàng</h1>
-          <p>
-            Đơn Pending là đơn mới cần gọi/chốt. Đơn Completed là đơn đã xác nhận,
-            dùng để tính doanh thu và khách mua nhiều.
-          </p>
+          <h1>Tong quan cua hang</h1>
+          <p>Theo doi doanh thu, don hang, mon ban chay va khach hang noi bat.</p>
         </div>
       </section>
 
       {notice ? <p className="api-notice">{notice}</p> : null}
 
       {isLoading ? (
-        <div className="loading-state">Đang tải thống kê...</div>
+        <div className="loading-state">Dang tai thong ke...</div>
       ) : (
         <>
-          <section className="admin-stats" aria-label="Tổng quan doanh thu">
+          <section className="admin-stats dashboard-stats">
             <div>
-              <span>Doanh thu hôm nay</span>
+              <span>Doanh thu hom nay</span>
               <strong>{formatCurrency(stats?.todayRevenue ?? 0)}</strong>
             </div>
             <div>
-              <span>Đơn mới hôm nay</span>
-              <strong>{stats?.newOrderCount ?? 0}</strong>
-              <p>{stats?.pendingOrderCount ?? 0} đơn đang xử lý</p>
+              <span>Tong doanh thu</span>
+              <strong>{formatCurrency(stats?.totalRevenue ?? 0)}</strong>
             </div>
             <div>
-              <span>Tổng doanh thu</span>
-              <strong>{formatCurrency(stats?.totalRevenue ?? 0)}</strong>
-              <p>{stats?.completedOrderCount ?? 0} đơn hoàn tất</p>
+              <span>Don moi</span>
+              <strong>{stats?.newOrderCount ?? 0}</strong>
+            </div>
+            <div>
+              <span>Dang xu ly</span>
+              <strong>{stats?.pendingOrderCount ?? 0}</strong>
+            </div>
+            <div>
+              <span>Da hoan tat</span>
+              <strong>{stats?.completedOrderCount ?? 0}</strong>
+            </div>
+            <div>
+              <span>Tong don</span>
+              <strong>{stats?.totalOrderCount ?? 0}</strong>
             </div>
           </section>
 
-          <section className="admin-insight-grid" aria-label="Thống kê chi tiết">
-            <article className="admin-insight-card">
-              <div className="insight-heading">
-                <span>Khách mua nhiều</span>
-                <strong>Theo số điện thoại</strong>
+          <section className="dashboard-grid">
+            <article className="dashboard-panel">
+              <div className="panel-heading">
+                <span>Mon ban chay</span>
+                <strong>{stats?.bestSellingProduct?.productName ?? 'Chua co du lieu'}</strong>
               </div>
-              {topCustomers.length === 0 ? (
-                <p className="empty-insight">Chưa có đơn hoàn tất để tổng kết khách.</p>
+              {stats?.topProducts.length ? (
+                <ul className="dashboard-list">
+                  {stats.topProducts.map((product) => (
+                    <li key={product.productId}>
+                      <div>
+                        <strong>{product.productName}</strong>
+                        <span>{product.quantitySold} phan da ban</span>
+                      </div>
+                      <em>{formatCurrency(product.revenue)}</em>
+                    </li>
+                  ))}
+                </ul>
               ) : (
-                <div className="customer-summary-list">
-                  {topCustomers.map((customer) => (
-                    <div className="customer-summary-row" key={customer.phone}>
+                <p className="empty-panel-text">Chua co san pham hoan tat don.</p>
+              )}
+            </article>
+
+            <article className="dashboard-panel">
+              <div className="panel-heading">
+                <span>Khach hang noi bat</span>
+                <strong>Top chi tieu</strong>
+              </div>
+              {stats?.topCustomers.length ? (
+                <ul className="dashboard-list">
+                  {stats.topCustomers.map((customer) => (
+                    <li key={`${customer.phone}-${customer.lastOrderAt}`}>
                       <div>
                         <strong>{customer.name}</strong>
-                        <span>{customer.phone}</span>
-                        <small>Mua gần nhất: {formatDateTime(customer.lastOrderAt)}</small>
+                        <span>{customer.phone} · {customer.orderCount} don</span>
+                        <small>Lan cuoi: {formatDateTime(customer.lastOrderAt)}</small>
                       </div>
-                      <div>
-                        <strong>{formatCurrency(customer.totalSpent)}</strong>
-                        <span>{customer.orderCount} đơn</span>
-                      </div>
-                    </div>
+                      <em>{formatCurrency(customer.totalSpent)}</em>
+                    </li>
                   ))}
-                </div>
-              )}
-            </article>
-
-            <article className="admin-insight-card">
-              <div className="insight-heading">
-                <span>Món bán chạy</span>
-                <strong>{stats?.bestSellingProduct?.productName ?? 'Chưa có'}</strong>
-              </div>
-              {topProducts.length === 0 ? (
-                <p className="empty-insight">Chưa có món nào trong đơn hoàn tất.</p>
+                </ul>
               ) : (
-                <div className="product-summary-list">
-                  {topProducts.map((product) => (
-                    <div className="product-summary-row" key={product.productId}>
-                      <span>{product.productName}</span>
-                      <strong>
-                        {product.quantitySold} phần · {formatCurrency(product.revenue)}
-                      </strong>
-                    </div>
-                  ))}
-                </div>
+                <p className="empty-panel-text">Chua co khach hang hoan tat don.</p>
               )}
             </article>
-          </section>
-
-          <section className="admin-flow-card">
-            <span>Luồng Zalo</span>
-            <p>
-              Web lưu đơn vào dashboard trước, sau đó mở Zalo với tin nhắn đã soạn sẵn.
-              Khách vẫn cần bấm gửi trong Zalo để Mẹ Mỹ nhận tin nhắn. Admin dùng mã đơn
-              trong tin nhắn để đối chiếu và chuyển trạng thái sang Hoàn tất khi đã chốt.
-            </p>
           </section>
         </>
       )}

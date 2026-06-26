@@ -33,18 +33,6 @@ npm install
 npm run dev
 ```
 
-## Guest order + Zalo flow
-
-Customers do not need an account to place an order:
-
-1. Customer chooses products and enters name/phone/address/note.
-2. Frontend saves the order to the backend as `Pending`.
-3. Frontend opens Zalo with a prepared message including the order code.
-4. Customer still needs to press send in Zalo so the shop receives the message.
-5. Admin checks the order in the dashboard/orders page and marks it `Completed` after confirming.
-
-A normal `zalo.me` link cannot auto-send messages on behalf of the customer. Fully automatic Zalo messaging would require Zalo Official Account/API integration later.
-
 ## Checks
 
 ```bash

@@ -13,7 +13,6 @@ export function RegisterPage({ apiBaseUrl }: RegisterPageProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [role, setRole] = useState<'Customer' | 'Admin'>('Admin')
   const [message, setMessage] = useState('')
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -21,9 +20,9 @@ export function RegisterPage({ apiBaseUrl }: RegisterPageProps) {
     setMessage('')
 
     try {
-      const session = await register(apiBaseUrl, username, password, fullName, role)
+      await register(apiBaseUrl, username, password, fullName)
       toast.success('Da tao tai khoan')
-      navigate(session.role === 'Admin' ? '/admin' : '/')
+      navigate('/')
     } catch {
       toast.error('Chua tao duoc tai khoan')
       setMessage('Chua tao duoc tai khoan. Kiem tra username/password.')
@@ -50,13 +49,6 @@ export function RegisterPage({ apiBaseUrl }: RegisterPageProps) {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
-        </label>
-        <label>
-          Role
-          <select value={role} onChange={(event) => setRole(event.target.value as 'Customer' | 'Admin')}>
-            <option value="Admin">Admin</option>
-            <option value="Customer">Customer</option>
-          </select>
         </label>
         <button type="submit">Tao tai khoan</button>
         {message ? <p className="checkout-message">{message}</p> : null}

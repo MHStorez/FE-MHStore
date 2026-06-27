@@ -1,9 +1,17 @@
+export type Category = {
+  id: string
+  name: string
+  slug: string
+  status: string
+}
+
 export type Product = {
   id: string
   name: string
   description?: string | null
   price: number
   imageUrl?: string | null
+  categoryId: string
   category?: string | null
   isAvailable?: boolean
 }
@@ -26,6 +34,7 @@ export type SavedOrder = {
   items: SavedOrderItem[]
   totalPrice: number
   status: string
+  paymentStatus: string
   createdAt: string
 }
 

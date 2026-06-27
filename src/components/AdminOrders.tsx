@@ -13,6 +13,19 @@ const formatDateTime = (value: string) =>
     timeStyle: 'short',
   }).format(new Date(value))
 
+const orderStatusLabel = (status: string) => {
+  if (status === 'Completed') return 'Hoàn tất'
+  if (status === 'Processing') return 'Đang chuẩn bị'
+  if (status === 'PaymentFailed') return 'Thanh toán lỗi'
+  return 'Chờ thanh toán'
+}
+
+const paymentStatusLabel = (status: string) => {
+  if (status === 'Paid') return 'Đã thanh toán'
+  if (status === 'Failed') return 'Thanh toán thất bại'
+  return 'Chờ thanh toán'
+}
+
 export function AdminOrders({ apiBaseUrl }: AdminOrdersProps) {
   const [orders, setOrders] = useState<SavedOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -65,6 +78,7 @@ export function AdminOrders({ apiBaseUrl }: AdminOrdersProps) {
   }, [apiBaseUrl])
 
   const pendingCount = orders.filter((order) => order.status === 'Pending').length
+  const processingCount = orders.filter((order) => order.status === 'Processing').length
   const completedTotal = useMemo(
     () =>
       orders
@@ -73,22 +87,19 @@ export function AdminOrders({ apiBaseUrl }: AdminOrdersProps) {
     [orders],
   )
 
-  const handleStatusChange = async (
-    orderId: string,
-    status: 'Pending' | 'Completed',
-  ) => {
+  const handleComplete = async (orderId: string) => {
     setUpdatingOrderId(orderId)
     setNotice('')
 
     try {
-      const updatedOrder = await updateOrderStatus(apiBaseUrl, orderId, status)
+      const updatedOrder = await updateOrderStatus(apiBaseUrl, orderId, 'Completed')
       setOrders((currentOrders) =>
         currentOrders.map((order) =>
           order.id === updatedOrder.id ? updatedOrder : order,
         ),
       )
     } catch {
-      setNotice('Chưa cập nhật được trạng thái đơn.')
+      setNotice('Chưa hoàn tất được đơn. Chỉ đơn đã thanh toán và đang chuẩn bị mới được hoàn tất.')
     } finally {
       setUpdatingOrderId('')
     }
@@ -100,7 +111,7 @@ export function AdminOrders({ apiBaseUrl }: AdminOrdersProps) {
         <div>
           <span>Quản trị</span>
           <h1>Đơn hàng Zalo</h1>
-          <p>Theo dõi đơn vừa tạo từ giỏ hàng và chốt trạng thái xử lý.</p>
+          <p>Theo dõi trạng thái thanh toán riêng với trạng thái đơn hàng.</p>
         </div>
         <button type="button" className="refresh-button" onClick={loadOrders}>
           Tải lại
@@ -109,12 +120,12 @@ export function AdminOrders({ apiBaseUrl }: AdminOrdersProps) {
 
       <section className="admin-stats" aria-label="Tổng quan đơn hàng">
         <div>
-          <span>Đơn mới</span>
+          <span>Chờ thanh toán</span>
           <strong>{pendingCount}</strong>
         </div>
         <div>
-          <span>Tổng đơn</span>
-          <strong>{orders.length}</strong>
+          <span>Đang chuẩn bị</span>
+          <strong>{processingCount}</strong>
         </div>
         <div>
           <span>Đã hoàn tất</span>
@@ -130,64 +141,64 @@ export function AdminOrders({ apiBaseUrl }: AdminOrdersProps) {
         ) : orders.length === 0 ? (
           <div className="empty-admin-state">Chưa có đơn hàng nào.</div>
         ) : (
-          orders.map((order) => (
-            <article className="order-card" key={order.id}>
-              <div className="order-main">
-                <div>
-                  <div className="order-title">
-                    <strong>#{order.id.slice(0, 8)}</strong>
-                    <span className={`status-pill ${order.status.toLowerCase()}`}>
-                      {order.status === 'Completed' ? 'Hoàn tất' : 'Đang xử lý'}
-                    </span>
+          orders.map((order) => {
+            const canComplete = order.paymentStatus === 'Paid' && order.status === 'Processing'
+
+            return (
+              <article className="order-card" key={order.id}>
+                <div className="order-main">
+                  <div>
+                    <div className="order-title">
+                      <strong>#{order.id.slice(0, 8)}</strong>
+                      <span className={`status-pill ${order.status.toLowerCase()}`}>
+                        Đơn: {orderStatusLabel(order.status)}
+                      </span>
+                      <span className={`status-pill payment-${order.paymentStatus.toLowerCase()}`}>
+                        TT: {paymentStatusLabel(order.paymentStatus)}
+                      </span>
+                    </div>
+                    <p>{formatDateTime(order.createdAt)}</p>
                   </div>
-                  <p>{formatDateTime(order.createdAt)}</p>
+                  <strong>{formatCurrency(order.totalPrice)}</strong>
                 </div>
-                <strong>{formatCurrency(order.totalPrice)}</strong>
-              </div>
 
-              <div className="order-detail-grid">
-                <div>
-                  <span>Khách</span>
-                  <p>{order.customerInfo.name || 'Chưa nhập tên'}</p>
-                  <p>{order.customerInfo.phone || 'Chưa nhập SĐT'}</p>
-                  <p>{order.customerInfo.address || 'Chưa nhập địa chỉ'}</p>
-                  {order.customerInfo.note ? <p>{order.customerInfo.note}</p> : null}
+                <div className="order-detail-grid">
+                  <div>
+                    <span>Khách</span>
+                    <p>{order.customerInfo.name || 'Chưa nhập tên'}</p>
+                    <p>{order.customerInfo.phone || 'Chưa nhập SĐT'}</p>
+                    <p>{order.customerInfo.address || 'Chưa nhập địa chỉ'}</p>
+                    {order.customerInfo.note ? <p>{order.customerInfo.note}</p> : null}
+                  </div>
+                  <div>
+                    <span>Món</span>
+                    <ul>
+                      {order.items.map((item) => (
+                        <li key={`${order.id}-${item.productId}-${item.productName}`}>
+                          <span>
+                            {item.productName} x{item.quantity}
+                          </span>
+                          <strong>
+                            {formatCurrency(item.unitPrice * item.quantity)}
+                          </strong>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div>
-                  <span>Món</span>
-                  <ul>
-                    {order.items.map((item) => (
-                      <li key={`${order.id}-${item.productId}-${item.productName}`}>
-                        <span>
-                          {item.productName} x{item.quantity}
-                        </span>
-                        <strong>
-                          {formatCurrency(item.unitPrice * item.quantity)}
-                        </strong>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
 
-              <div className="order-actions">
-                <button
-                  type="button"
-                  disabled={updatingOrderId === order.id || order.status === 'Pending'}
-                  onClick={() => handleStatusChange(order.id, 'Pending')}
-                >
-                  Đang xử lý
-                </button>
-                <button
-                  type="button"
-                  disabled={updatingOrderId === order.id || order.status === 'Completed'}
-                  onClick={() => handleStatusChange(order.id, 'Completed')}
-                >
-                  Hoàn tất
-                </button>
-              </div>
-            </article>
-          ))
+                <div className="order-actions">
+                  <button
+                    type="button"
+                    disabled={updatingOrderId === order.id || !canComplete}
+                    onClick={() => handleComplete(order.id)}
+                  >
+                    Hoàn tất
+                  </button>
+                </div>
+              </article>
+            )
+          })
         )}
       </section>
     </main>

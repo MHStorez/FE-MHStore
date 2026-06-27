@@ -37,10 +37,10 @@ export function Cart({
   )
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
-  const hasRequiredCustomerInfo = () => {
-    if (!customer.name.trim() || !customer.phone.trim()) {
-      setCheckoutMessage('Nhập tên và số điện thoại để shop tổng kết khách mua hàng.')
-      toast.error('Nhập tên và số điện thoại')
+  const validateCustomer = () => {
+    if (!customer.name.trim() || !customer.phone.trim() || !customer.address.trim()) {
+      toast.error('Vui long nhap ten, so dien thoai va dia chi giao hang')
+      setCheckoutMessage('Vui long nhap ten, so dien thoai va dia chi giao hang.')
       return false
     }
 
@@ -48,11 +48,12 @@ export function Cart({
   }
 
   const handleOrder = async () => {
-    if (items.length === 0 || isSubmitting || !hasRequiredCustomerInfo()) {
+    if (items.length === 0 || isSubmitting || !validateCustomer()) {
       return
     }
 
-    let message = createOrderMessage(items, customer, total)
+    const message = createOrderMessage(items, customer, total)
+    const zaloUrl = createZaloLink(zaloPhone, message)
     const zaloWindow = window.open('', '_blank')
 
     setIsSubmitting(true)
@@ -60,15 +61,12 @@ export function Cart({
 
     try {
       const order = await saveOrder(apiBaseUrl, items, customer)
-      message = createOrderMessage(items, customer, total, order.id)
-      toast.success('Đã lưu đơn hàng')
-      setCheckoutMessage(`Đã lưu đơn #${order.id.slice(0, 8).toUpperCase()}. Đang mở Zalo...`)
+      toast.success('Da luu don hang')
+      setCheckoutMessage(`Đã lưu đơn #${order.id.slice(0, 8)}. Đang mở Zalo...`)
     } catch {
-      toast.error('Chưa lưu được đơn hàng')
+      toast.error('Chua luu duoc don hang')
       setCheckoutMessage('Chưa lưu được đơn vào API. Vẫn mở Zalo để gửi đơn.')
     } finally {
-      const zaloUrl = createZaloLink(zaloPhone, message)
-
       if (zaloWindow) {
         zaloWindow.opener = null
         zaloWindow.location.href = zaloUrl
@@ -81,7 +79,7 @@ export function Cart({
   }
 
   const handleOnlinePayment = async () => {
-    if (items.length === 0 || isSubmitting || !hasRequiredCustomerInfo()) {
+    if (items.length === 0 || isSubmitting || !validateCustomer()) {
       return
     }
 
@@ -155,7 +153,6 @@ export function Cart({
             value={customer.name}
             onChange={(event) => onCustomerChange('name', event.target.value)}
             placeholder="Ví dụ: Cô Lan"
-            required
           />
         </label>
         <label>
@@ -163,8 +160,7 @@ export function Cart({
           <input
             value={customer.phone}
             onChange={(event) => onCustomerChange('phone', event.target.value)}
-            placeholder="090..."
-            required
+            placeholder="0334140131"
           />
         </label>
         <label>
@@ -190,9 +186,6 @@ export function Cart({
         <span>Tổng tạm tính</span>
         <strong>{formatCurrency(total)}</strong>
       </div>
-      <p className="zalo-flow-note">
-        Web sẽ lưu đơn vào admin rồi mở Zalo với nội dung đã soạn sẵn. Khách cần bấm gửi trong Zalo để shop nhận tin.
-      </p>
 
       <button
         type="button"

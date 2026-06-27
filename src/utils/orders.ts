@@ -1,4 +1,4 @@
-import type { CartItem, CustomerInfo, SavedOrder } from '../types'
+import type { CartItem, CustomerInfo, Product, SavedOrder } from '../types'
 import { getAuthToken } from './auth'
 
 export const saveOrder = async (
@@ -15,15 +15,38 @@ export const saveOrder = async (
       customerInfo: customer,
       items: items.map((item) => ({
         productId: item.product.id,
-        productName: item.product.name,
         quantity: item.quantity,
-        unitPrice: item.product.price,
       })),
     }),
   })
 
   if (!response.ok) {
     throw new Error(`Order API returned ${response.status}`)
+  }
+
+  return (await response.json()) as SavedOrder
+}
+
+export const saveDirectOrder = async (
+  apiBaseUrl: string,
+  product: Product,
+  quantity: number,
+  customer: CustomerInfo,
+) => {
+  const response = await fetch(`${apiBaseUrl}/api/orders/direct`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      customerInfo: customer,
+      productId: product.id,
+      quantity,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Direct order API returned ${response.status}`)
   }
 
   return (await response.json()) as SavedOrder
@@ -45,7 +68,7 @@ export const fetchOrders = async (apiBaseUrl: string) => {
 export const updateOrderStatus = async (
   apiBaseUrl: string,
   orderId: string,
-  status: 'Pending' | 'Completed',
+  status: 'Completed',
 ) => {
   const response = await fetch(`${apiBaseUrl}/api/orders/${orderId}/status`, {
     method: 'PATCH',

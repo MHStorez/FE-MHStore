@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import logo from '../assets/logo.svg'
+import logo from '../assets/logo.png'
 import { clearAuthSession } from '../utils/auth'
 
 export function AdminLayout() {

@@ -1,4 +1,4 @@
-import type { Product } from '../types'
+import type { Category, Product } from '../types'
 import { getAuthToken } from './auth'
 
 export type ProductPayload = {
@@ -6,7 +6,9 @@ export type ProductPayload = {
   description?: string
   price: number
   imageUrl?: string
-  category: string
+  categoryId?: string
+  category?: string
+  newCategoryName?: string
   isAvailable: boolean
 }
 
@@ -18,7 +20,7 @@ const getAuthHeaders = (): Record<string, string> => {
 
 export const fetchProducts = async (
   apiBaseUrl: string,
-  filters?: { search?: string; category?: string; includeUnavailable?: boolean },
+  filters?: { search?: string; categoryId?: string; category?: string; includeUnavailable?: boolean },
 ) => {
   const params = new URLSearchParams()
 
@@ -26,7 +28,9 @@ export const fetchProducts = async (
     params.set('search', filters.search)
   }
 
-  if (filters?.category && filters.category !== 'Tat ca') {
+  if (filters?.categoryId) {
+    params.set('categoryId', filters.categoryId)
+  } else if (filters?.category && filters.category !== 'Tat ca') {
     params.set('category', filters.category)
   }
 
@@ -42,6 +46,69 @@ export const fetchProducts = async (
   }
 
   return (await response.json()) as Product[]
+}
+
+export const fetchProduct = async (apiBaseUrl: string, productId: string) => {
+  const response = await fetch(`${apiBaseUrl}/api/products/${productId}`)
+
+  if (!response.ok) {
+    throw new Error(`Product API returned ${response.status}`)
+  }
+
+  return (await response.json()) as Product
+}
+
+export const fetchCategories = async (apiBaseUrl: string, includeInactive = false) => {
+  const params = new URLSearchParams()
+
+  if (includeInactive) {
+    params.set('includeInactive', 'true')
+  }
+
+  const query = params.toString()
+  const response = await fetch(`${apiBaseUrl}/api/categories${query ? `?${query}` : ''}`, {
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Categories API returned ${response.status}`)
+  }
+
+  return (await response.json()) as Category[]
+}
+
+export const createCategory = async (apiBaseUrl: string, name: string) => {
+  const response = await fetch(`${apiBaseUrl}/api/categories`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ name, status: 'Active' }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Create category API returned ${response.status}`)
+  }
+
+  return (await response.json()) as Category
+}
+
+export const uploadProductImage = async (apiBaseUrl: string, file: File) => {
+  const formData = new FormData()
+  formData.set('file', file)
+
+  const response = await fetch(`${apiBaseUrl}/api/products/image`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error(`Upload image API returned ${response.status}`)
+  }
+
+  return (await response.json()) as { imageUrl: string }
 }
 
 export const createProduct = async (

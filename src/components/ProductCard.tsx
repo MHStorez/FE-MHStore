@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Product } from '../types'
 import { formatCurrency } from '../utils/format'
 
@@ -5,6 +6,7 @@ type ProductCardProps = {
   product: Product
   quantity: number
   onAdd: (product: Product) => void
+  onBuyNow: (product: Product) => void
   onIncrement: (productId: string) => void
   onDecrement: (productId: string) => void
 }
@@ -16,6 +18,7 @@ export function ProductCard({
   product,
   quantity,
   onAdd,
+  onBuyNow,
   onIncrement,
   onDecrement,
 }: ProductCardProps) {
@@ -50,16 +53,28 @@ export function ProductCard({
                 +
               </button>
             </div>
-          ) : (
-            <button
-              type="button"
-              className="add-button"
-              disabled={!isAvailable}
-              onClick={() => onAdd(product)}
-            >
-              Thêm vào giỏ
-            </button>
-          )}
+          ) : null}
+        </div>
+        <div className="product-card-actions">
+          <Link className="detail-link" to={`/menu/${product.id}`}>
+            Chi tiết
+          </Link>
+          <button
+            type="button"
+            className="add-button"
+            disabled={!isAvailable}
+            onClick={() => onAdd(product)}
+          >
+            Thêm vào giỏ
+          </button>
+          <button
+            type="button"
+            className="buy-now-button"
+            disabled={!isAvailable}
+            onClick={() => onBuyNow(product)}
+          >
+            Mua ngay
+          </button>
         </div>
       </div>
     </article>

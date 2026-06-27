@@ -1,17 +1,18 @@
 import { ProductCard } from '../components/ProductCard'
-import type { Product } from '../types'
+import type { Category, Product } from '../types'
 
 type MenuPageProps = {
   isLoading: boolean
   apiNotice: string
-  categories: string[]
-  selectedCategory: string
+  categories: Category[]
+  selectedCategoryId: string
   searchQuery: string
   visibleProducts: Product[]
   quantityByProductId: Map<string, number>
-  onCategoryChange: (category: string) => void
+  onCategoryChange: (categoryId: string) => void
   onSearchChange: (value: string) => void
   onAdd: (product: Product) => void
+  onBuyNow: (product: Product) => void
   onIncrement: (productId: string) => void
   onDecrement: (productId: string) => void
 }
@@ -20,13 +21,14 @@ export function MenuPage({
   isLoading,
   apiNotice,
   categories,
-  selectedCategory,
+  selectedCategoryId,
   searchQuery,
   visibleProducts,
   quantityByProductId,
   onCategoryChange,
   onSearchChange,
   onAdd,
+  onBuyNow,
   onIncrement,
   onDecrement,
 }: MenuPageProps) {
@@ -53,16 +55,25 @@ export function MenuPage({
         </div>
 
         <div className="category-tabs" role="tablist" aria-label="Loc danh muc">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={selectedCategoryId === ''}
+            className={selectedCategoryId === '' ? 'active' : ''}
+            onClick={() => onCategoryChange('')}
+          >
+            Tất cả
+          </button>
           {categories.map((category) => (
             <button
               type="button"
-              key={category}
+              key={category.id}
               role="tab"
-              aria-selected={selectedCategory === category}
-              className={selectedCategory === category ? 'active' : ''}
-              onClick={() => onCategoryChange(category)}
+              aria-selected={selectedCategoryId === category.id}
+              className={selectedCategoryId === category.id ? 'active' : ''}
+              onClick={() => onCategoryChange(category.id)}
             >
-              {category}
+              {category.name}
             </button>
           ))}
         </div>
@@ -77,6 +88,7 @@ export function MenuPage({
                 product={product}
                 quantity={quantityByProductId.get(product.id) ?? 0}
                 onAdd={onAdd}
+                onBuyNow={onBuyNow}
                 onIncrement={onIncrement}
                 onDecrement={onDecrement}
               />

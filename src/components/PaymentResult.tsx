@@ -15,10 +15,10 @@ export function PaymentResult({ onBackToShop }: PaymentResultProps) {
     return (
       <main className="payment-result-shell">
         <section className="payment-result failed">
-          <span>Chua co thong tin thanh toan</span>
-          <h1>Vui long tao don hang moi</h1>
+          <span>Chưa có thông tin thanh toán</span>
+          <h1>Vui lòng tạo đơn hàng mới</h1>
           <button type="button" onClick={onBackToShop}>
-            Ve cua hang
+            Về cửa hàng
           </button>
         </section>
       </main>
@@ -28,31 +28,31 @@ export function PaymentResult({ onBackToShop }: PaymentResultProps) {
   return (
     <main className="payment-result-shell">
       <section className="payment-result success">
-        <span>Thanh toan SePay</span>
-        <h1>Quet QR hoac chuyen khoan dung noi dung</h1>
-        <img className="payment-qr" src={payment.qrImageUrl} alt="Ma QR thanh toan SePay" />
+        <span>Thanh toán SePay</span>
+        <h1>Quét QR hoặc chuyển khoản đúng nội dung</h1>
+        <img className="payment-qr" src={payment.qrImageUrl} alt="Mã QR thanh toán SePay" />
         <div className="payment-result-details">
           <p>
-            Ngan hang: <strong>{payment.bankCode}</strong>
+            Ngân hàng: <strong>{payment.bankCode}</strong>
           </p>
           <p>
-            So tai khoan: <strong>{payment.accountNumber}</strong>
+            Số tài khoản: <strong>{payment.accountNumber}</strong>
           </p>
           <p>
-            Chu tai khoan: <strong>{payment.accountName}</strong>
+            Chủ tài khoản: <strong>{payment.accountName}</strong>
           </p>
           <p>
-            So tien: <strong>{formatCurrency(payment.amount)}</strong>
+            Số tiền: <strong>{formatCurrency(payment.amount)}</strong>
           </p>
           <p>
-            Noi dung: <strong>{payment.transferContent}</strong>
+            Nội dung: <strong>{payment.transferContent}</strong>
           </p>
           <p>
-            Ma don: <strong>{payment.orderId.slice(0, 8)}</strong>
+            Mã đơn: <strong>{payment.orderId.slice(0, 8)}</strong>
           </p>
         </div>
         <button type="button" onClick={onBackToShop}>
-          Ve cua hang
+          Về cửa hàng
         </button>
       </section>
     </main>

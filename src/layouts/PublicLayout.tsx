@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
-import logo from '../assets/logo.png'
+import logo from '../assets/MHStoreLogo.png'
 
 type PublicLayoutProps = {
   cartCount: number
@@ -14,15 +14,15 @@ export function PublicLayout({ cartCount, zaloPhone }: PublicLayoutProps) {
           <img className="brand-logo" src={logo} alt="MHStore" />
           <div>
             <strong>MHStore</strong>
-            <span>Do dong lanh va do an nha lam</span>
+            <span>Đồ đông lạnh và đồ ăn nhà làm</span>
           </div>
         </Link>
 
-        <nav className="public-nav" aria-label="Public navigation">
-          <Link to="/">Home</Link>
-          <Link to="/menu">San pham</Link>
-          <Link to="/cart">Gio hang ({cartCount})</Link>
-          <Link to="/login">Dang nhap</Link>
+        <nav className="public-nav" aria-label="Điều hướng cửa hàng">
+          <Link to="/">Trang chủ</Link>
+          <Link to="/menu">Sản phẩm</Link>
+          <Link to="/cart">Giỏ hàng ({cartCount})</Link>
+          <Link to="/login">Đăng nhập</Link>
         </nav>
 
         <a className="zalo-link" href={`https://zalo.me/${zaloPhone}`}>

@@ -6,6 +6,8 @@ export type ProductPayload = {
   description?: string
   price: number
   imageUrl?: string
+  imageUrls?: string[]
+  stock: number
   categoryId?: string
   category?: string
   newCategoryName?: string
@@ -77,14 +79,14 @@ export const fetchCategories = async (apiBaseUrl: string, includeInactive = fals
   return (await response.json()) as Category[]
 }
 
-export const createCategory = async (apiBaseUrl: string, name: string) => {
+export const createCategory = async (apiBaseUrl: string, name: string, status = 'Active') => {
   const response = await fetch(`${apiBaseUrl}/api/categories`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify({ name, status: 'Active' }),
+    body: JSON.stringify({ name, status }),
   })
 
   if (!response.ok) {
@@ -92,6 +94,39 @@ export const createCategory = async (apiBaseUrl: string, name: string) => {
   }
 
   return (await response.json()) as Category
+}
+
+export const updateCategory = async (
+  apiBaseUrl: string,
+  categoryId: string,
+  name: string,
+  status: string,
+) => {
+  const response = await fetch(`${apiBaseUrl}/api/categories/${categoryId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ name, status }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Update category API returned ${response.status}`)
+  }
+
+  return (await response.json()) as Category
+}
+
+export const deleteCategory = async (apiBaseUrl: string, categoryId: string) => {
+  const response = await fetch(`${apiBaseUrl}/api/categories/${categoryId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Delete category API returned ${response.status}`)
+  }
 }
 
 export const uploadProductImage = async (apiBaseUrl: string, file: File) => {

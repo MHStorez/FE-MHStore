@@ -1,4 +1,4 @@
-import type { CartItem, CustomerInfo } from '../types'
+import type { CartItem, CustomerInfo, SavedOrder } from '../types'
 import { formatCurrency } from './format'
 
 export const createZaloLink = (phone: string, message: string) => {
@@ -11,39 +11,25 @@ export const createOrderMessage = (
   items: CartItem[],
   customer: CustomerInfo,
   total: number,
+  order?: SavedOrder,
 ) => {
-  const orderLines = items.map(
-    (item) =>
-      `- ${item.product.name} x${item.quantity}: ${formatCurrency(
-        item.product.price * item.quantity,
-      )}`,
-  )
+  const firstItem = items[0]
+  const productLine = items.length === 1 && firstItem
+    ? firstItem.product.name
+    : items.map((item) => `${item.product.name} x${item.quantity}`).join(', ')
+  const quantityLine = items.length === 1 && firstItem
+    ? String(firstItem.quantity)
+    : String(items.reduce((sum, item) => sum + item.quantity, 0))
 
-  const customerLines = [
-    customer.name.trim() ? `Tên: ${customer.name.trim()}` : null,
-    customer.phone.trim() ? `SĐT: ${customer.phone.trim()}` : null,
-    customer.address.trim() ? `Địa chỉ: ${customer.address.trim()}` : null,
-    customer.note.trim() ? `Ghi chú: ${customer.note.trim()}` : null,
-  ].filter(Boolean)
-
-  const message = [
-    '🛒 ĐƠN HÀNG MỚI TỪ MHSTORE',
-    '-------------------------',
-    ...orderLines,
-    '-------------------------',
-    `💰 Tổng tạm tính: ${formatCurrency(total)}`,
+  return [
+    `Xin chào MHStore, tôi muốn xác nhận đơn #${order?.orderCode ?? order?.id.slice(0, 8) ?? 'mới'}.`,
     '',
-    customerLines.length > 0 ? '📍 Thông tin khách hàng:' : null,
-    ...customerLines,
-    '',
-    '💳 Hình thức thanh toán mong muốn:',
-    '( ) Chuyển khoản (Gửi kèm bill)',
-    '( ) Tiền mặt khi nhận hàng (COD)',
-    '',
-    'Cảm ơn shop!'
-  ]
-    .filter((line) => line !== null)
-    .join('\n')
-
-  return message
+    `Sản phẩm: ${productLine}`,
+    `Số lượng: ${quantityLine}`,
+    `Tổng tiền: ${formatCurrency(total)}`,
+    `Người nhận: ${customer.name.trim()}`,
+    `Số điện thoại: ${customer.phone.trim()}`,
+    `Địa chỉ: ${customer.address.trim()}`,
+    `Ghi chú: ${customer.note.trim() || 'Không có'}`,
+  ].join('\n')
 }

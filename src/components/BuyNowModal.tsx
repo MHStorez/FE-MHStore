@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-import type { CustomerInfo, Product } from '../types'
+import type { CustomerInfo, PaymentMethod, Product } from '../types'
 import { formatCurrency } from '../utils/format'
 import { saveDirectOrder } from '../utils/orders'
+import { getProductImage, getProductStock, isProductInStock } from '../utils/productImages'
 import { createPayment } from '../utils/payment'
 import { createOrderMessage, createZaloLink } from '../utils/zalo'
+import { DeliveryAddressFields } from './DeliveryAddressFields'
 
 type BuyNowModalProps = {
   product: Product
@@ -13,8 +15,7 @@ type BuyNowModalProps = {
   onClose: () => void
 }
 
-const fallbackImage =
-  'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=80'
+type BuyNowPaymentChoice = 'Online' | 'ZaloCOD' | 'ZaloManualTransfer'
 
 export function BuyNowModal({ product, apiBaseUrl, zaloPhone, onClose }: BuyNowModalProps) {
   const [quantity, setQuantity] = useState(1)
@@ -22,25 +23,23 @@ export function BuyNowModal({ product, apiBaseUrl, zaloPhone, onClose }: BuyNowM
     name: '',
     phone: '',
     address: '',
+    latitude: null,
+    longitude: null,
     note: '',
+    addressReferenceId: '',
   })
-  const [paymentMethod, setPaymentMethod] = useState<'zalo' | 'sepay'>('zalo')
+  const [paymentChoice, setPaymentChoice] = useState<BuyNowPaymentChoice>('ZaloCOD')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
+  const stock = getProductStock(product)
+  const isAvailable = isProductInStock(product)
   const total = product.price * quantity
   const directItems = useMemo(() => [{ product, quantity }], [product, quantity])
 
-  const updateCustomer = (field: keyof CustomerInfo, value: string) => {
-    setCustomer((currentCustomer) => ({
-      ...currentCustomer,
-      [field]: value,
-    }))
-  }
-
   const validateCustomer = () => {
     if (!customer.name.trim() || !customer.phone.trim() || !customer.address.trim()) {
-      toast.error('Vui long nhap ten, so dien thoai va dia chi giao hang')
-      setMessage('Vui long nhap ten, so dien thoai va dia chi giao hang.')
+      toast.error('Vui lòng nhập tên, số điện thoại và địa chỉ giao hàng')
+      setMessage('Vui lòng nhập tên, số điện thoại và địa chỉ giao hàng.')
       return false
     }
 
@@ -48,32 +47,40 @@ export function BuyNowModal({ product, apiBaseUrl, zaloPhone, onClose }: BuyNowM
   }
 
   const handleSubmit = async () => {
-    if (isSubmitting || !validateCustomer()) {
+    if (isSubmitting || !isAvailable || quantity > stock) {
+      toast.error('Số lượng vượt quá tồn kho')
+      setMessage('Số lượng mua ngay vượt quá tồn kho hiện tại.')
+      return
+    }
+
+    if (!validateCustomer()) {
       return
     }
 
     setIsSubmitting(true)
-    setMessage('Dang tao don mua ngay...')
+    setMessage('Đang tạo đơn mua ngay...')
 
     try {
-      const order = await saveDirectOrder(apiBaseUrl, product, quantity, customer)
-
-      if (paymentMethod === 'sepay') {
+      if (paymentChoice === 'Online') {
+        const order = await saveDirectOrder(apiBaseUrl, product, quantity, customer, 'Website', 'Online')
         const payment = await createPayment(apiBaseUrl, order.id)
         sessionStorage.setItem('sepayPayment', JSON.stringify(payment))
-        toast.success('Da tao ma thanh toan SePay')
+        toast.success('Đã tạo mã thanh toán SePay')
         window.location.href = '/payment-result'
         return
       }
 
-      const zaloUrl = createZaloLink(zaloPhone, createOrderMessage(directItems, customer, total))
-      toast.success('Da tao don mua ngay')
-      setMessage(`Da tao don #${order.id.slice(0, 8)}. Dang mo Zalo...`)
+      const paymentMethod: Extract<PaymentMethod, 'COD' | 'ManualTransfer'> =
+        paymentChoice === 'ZaloCOD' ? 'COD' : 'ManualTransfer'
+      const order = await saveDirectOrder(apiBaseUrl, product, quantity, customer, 'Zalo', paymentMethod)
+      const zaloUrl = createZaloLink(zaloPhone, createOrderMessage(directItems, customer, total, order))
+      toast.success('Đã tạo đơn Zalo')
+      setMessage(`Đã tạo đơn #${order.orderCode}. Đang mở Zalo...`)
       window.open(zaloUrl, '_blank', 'noopener,noreferrer')
       onClose()
     } catch {
-      toast.error('Chua tao duoc don mua ngay')
-      setMessage('Chua tao duoc don mua ngay. Gio hang hien tai khong bi thay doi.')
+      toast.error('Chưa tạo được đơn mua ngay')
+      setMessage('Chưa tạo được đơn mua ngay. Vui lòng thử lại.')
     } finally {
       setIsSubmitting(false)
     }
@@ -93,40 +100,30 @@ export function BuyNowModal({ product, apiBaseUrl, zaloPhone, onClose }: BuyNowM
         </div>
 
         <div className="buy-now-product">
-          <img src={product.imageUrl || fallbackImage} alt={product.name} />
+          <img src={getProductImage(product)} alt={product.name} />
           <div>
             <strong>{product.name}</strong>
             <span>{formatCurrency(product.price)}</span>
-            <div className="quantity-stepper" aria-label={`So luong ${product.name}`}>
+            <em className={isAvailable ? 'stock-badge' : 'stock-badge out'}>
+              {isAvailable ? `Còn ${stock}` : 'Hết hàng'}
+            </em>
+            <div className="quantity-stepper" aria-label={`Số lượng ${product.name}`}>
               <button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))}>-</button>
               <span>{quantity}</span>
-              <button type="button" onClick={() => setQuantity((value) => value + 1)}>+</button>
+              <button type="button" disabled={!isAvailable || quantity >= stock} onClick={() => setQuantity((value) => Math.min(stock, value + 1))}>+</button>
             </div>
           </div>
         </div>
 
+        <DeliveryAddressFields apiBaseUrl={apiBaseUrl} customer={customer} onChange={setCustomer} />
+
         <div className="customer-form buy-now-form">
           <label>
-            Tên người nhận
-            <input value={customer.name} onChange={(event) => updateCustomer('name', event.target.value)} />
-          </label>
-          <label>
-            Số điện thoại
-            <input value={customer.phone} onChange={(event) => updateCustomer('phone', event.target.value)} />
-          </label>
-          <label>
-            Địa chỉ nhận hàng
-            <input value={customer.address} onChange={(event) => updateCustomer('address', event.target.value)} />
-          </label>
-          <label>
-            Ghi chú
-            <textarea value={customer.note} onChange={(event) => updateCustomer('note', event.target.value)} rows={3} />
-          </label>
-          <label>
             Phương thức thanh toán
-            <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as 'zalo' | 'sepay')}>
-              <option value="zalo">Đặt qua Zalo</option>
-              <option value="sepay">Thanh toán SePay</option>
+            <select value={paymentChoice} onChange={(event) => setPaymentChoice(event.target.value as BuyNowPaymentChoice)}>
+              <option value="ZaloCOD">Đặt qua Zalo - COD</option>
+              <option value="ZaloManualTransfer">Đặt qua Zalo - chuyển khoản thủ công</option>
+              <option value="Online">Thanh toán SePay online</option>
             </select>
           </label>
         </div>
@@ -136,7 +133,7 @@ export function BuyNowModal({ product, apiBaseUrl, zaloPhone, onClose }: BuyNowM
           <strong>{formatCurrency(total)}</strong>
         </div>
 
-        <button type="button" className="online-payment-button" disabled={isSubmitting} onClick={handleSubmit}>
+        <button type="button" className="online-payment-button" disabled={isSubmitting || !isAvailable || quantity > stock} onClick={handleSubmit}>
           {isSubmitting ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}
         </button>
         {message ? <p className="checkout-message">{message}</p> : null}

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Product } from '../types'
 import { formatCurrency } from '../utils/format'
+import { getProductImage, getProductStock, isProductInStock } from '../utils/productImages'
 
 type ProductCardProps = {
   product: Product
@@ -11,9 +12,6 @@ type ProductCardProps = {
   onDecrement: (productId: string) => void
 }
 
-const fallbackImage =
-  'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=80'
-
 export function ProductCard({
   product,
   quantity,
@@ -22,13 +20,15 @@ export function ProductCard({
   onIncrement,
   onDecrement,
 }: ProductCardProps) {
-  const isAvailable = product.isAvailable ?? true
+  const stock = getProductStock(product)
+  const isAvailable = isProductInStock(product)
+  const canIncrement = isAvailable && quantity < stock
 
   return (
     <article className="product-card">
       <div className="product-media">
         <img
-          src={product.imageUrl || fallbackImage}
+          src={getProductImage(product)}
           alt={product.name}
           loading="lazy"
         />
@@ -39,6 +39,9 @@ export function ProductCard({
         <div>
           <h3>{product.name}</h3>
           {product.description ? <p>{product.description}</p> : null}
+          <span className={isAvailable ? 'stock-badge' : 'stock-badge out'}>
+            {isAvailable ? `Còn ${stock}` : 'Hết hàng'}
+          </span>
         </div>
 
         <div className="product-footer">
@@ -49,7 +52,7 @@ export function ProductCard({
                 -
               </button>
               <span>{quantity}</span>
-              <button type="button" onClick={() => onIncrement(product.id)}>
+              <button type="button" disabled={!canIncrement} onClick={() => onIncrement(product.id)}>
                 +
               </button>
             </div>

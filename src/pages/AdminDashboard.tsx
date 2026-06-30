@@ -33,7 +33,7 @@ export function AdminDashboard({ apiBaseUrl }: AdminDashboardProps) {
         }
       } catch {
         if (isMounted) {
-          setNotice('Chua tai duoc thong ke. Kiem tra dang nhap chu quan va backend.')
+          setNotice('Chưa tải được thống kê. Kiểm tra đăng nhập chủ quán và backend.')
         }
       } finally {
         if (isMounted) {
@@ -54,40 +54,40 @@ export function AdminDashboard({ apiBaseUrl }: AdminDashboardProps) {
       <section className="admin-heading">
         <div>
           <span>Dashboard</span>
-          <h1>Tong quan cua hang</h1>
-          <p>Theo doi doanh thu, don hang, mon ban chay va khach hang noi bat.</p>
+          <h1>Tổng quan cửa hàng</h1>
+          <p>Theo dõi doanh thu, đơn hàng, món bán chạy và khách hàng nổi bật.</p>
         </div>
       </section>
 
       {notice ? <p className="api-notice">{notice}</p> : null}
 
       {isLoading ? (
-        <div className="loading-state">Dang tai thong ke...</div>
+        <div className="loading-state">Đang tải thống kê...</div>
       ) : (
         <>
           <section className="admin-stats dashboard-stats">
             <div>
-              <span>Doanh thu hom nay</span>
+              <span>Doanh thu hôm nay</span>
               <strong>{formatCurrency(stats?.todayRevenue ?? 0)}</strong>
             </div>
             <div>
-              <span>Tong doanh thu</span>
+              <span>Tổng doanh thu</span>
               <strong>{formatCurrency(stats?.totalRevenue ?? 0)}</strong>
             </div>
             <div>
-              <span>Don moi</span>
+              <span>Đơn mới</span>
               <strong>{stats?.newOrderCount ?? 0}</strong>
             </div>
             <div>
-              <span>Dang xu ly</span>
+              <span>Đang xử lý</span>
               <strong>{stats?.pendingOrderCount ?? 0}</strong>
             </div>
             <div>
-              <span>Da hoan tat</span>
+              <span>Đã hoàn tất</span>
               <strong>{stats?.completedOrderCount ?? 0}</strong>
             </div>
             <div>
-              <span>Tong don</span>
+              <span>Tổng đơn</span>
               <strong>{stats?.totalOrderCount ?? 0}</strong>
             </div>
           </section>
@@ -95,8 +95,8 @@ export function AdminDashboard({ apiBaseUrl }: AdminDashboardProps) {
           <section className="dashboard-grid">
             <article className="dashboard-panel">
               <div className="panel-heading">
-                <span>Mon ban chay</span>
-                <strong>{stats?.bestSellingProduct?.productName ?? 'Chua co du lieu'}</strong>
+                <span>Món bán chạy</span>
+                <strong>{stats?.bestSellingProduct?.productName ?? 'Chưa có dữ liệu'}</strong>
               </div>
               {stats?.topProducts.length ? (
                 <ul className="dashboard-list">
@@ -104,21 +104,21 @@ export function AdminDashboard({ apiBaseUrl }: AdminDashboardProps) {
                     <li key={product.productId}>
                       <div>
                         <strong>{product.productName}</strong>
-                        <span>{product.quantitySold} phan da ban</span>
+                        <span>{product.quantitySold} phần đã bán</span>
                       </div>
                       <em>{formatCurrency(product.revenue)}</em>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="empty-panel-text">Chua co san pham hoan tat don.</p>
+                <p className="empty-panel-text">Chưa có sản phẩm hoàn tất đơn.</p>
               )}
             </article>
 
             <article className="dashboard-panel">
               <div className="panel-heading">
-                <span>Khach hang noi bat</span>
-                <strong>Top chi tieu</strong>
+                <span>Khách hàng nổi bật</span>
+                <strong>Top chi tiêu</strong>
               </div>
               {stats?.topCustomers.length ? (
                 <ul className="dashboard-list">
@@ -126,15 +126,15 @@ export function AdminDashboard({ apiBaseUrl }: AdminDashboardProps) {
                     <li key={`${customer.phone}-${customer.lastOrderAt}`}>
                       <div>
                         <strong>{customer.name}</strong>
-                        <span>{customer.phone} · {customer.orderCount} don</span>
-                        <small>Lan cuoi: {formatDateTime(customer.lastOrderAt)}</small>
+                        <span>{customer.phone} · {customer.orderCount} đơn</span>
+                        <small>Lần cuối: {formatDateTime(customer.lastOrderAt)}</small>
                       </div>
                       <em>{formatCurrency(customer.totalSpent)}</em>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="empty-panel-text">Chua co khach hang hoan tat don.</p>
+                <p className="empty-panel-text">Chưa có khách hàng hoàn tất đơn.</p>
               )}
             </article>
           </section>

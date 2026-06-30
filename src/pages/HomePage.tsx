@@ -3,20 +3,23 @@ import logo from '../assets/logo.png'
 
 const features = [
   {
-    title: 'Mon ngon cap dong',
-    description: 'San pham dong goi gon, bao quan tien loi va che bien nhanh tai nha.',
+    label: '01',
+    title: 'Món ngon cấp đông',
+    description: 'Sản phẩm đóng gói gọn, bảo quản tiện lợi và chế biến nhanh tại nhà.',
   },
   {
-    title: 'Dat hang de dang',
-    description: 'Chon mon, them vao gio va gui don qua Zalo chi trong vai thao tac.',
+    label: '02',
+    title: 'Đặt hàng dễ dàng',
+    description: 'Chọn món, thêm vào giỏ và gửi đơn qua Zalo chỉ trong vài thao tác.',
   },
   {
-    title: 'Thanh toan linh hoat',
-    description: 'Ho tro chuyen khoan SePay hoac xac nhan don truc tiep voi shop.',
+    label: '03',
+    title: 'Thanh toán linh hoạt',
+    description: 'Hỗ trợ chuyển khoản SePay hoặc xác nhận đơn trực tiếp với shop.',
   },
 ]
 
-const steps = ['Chon mon yeu thich', 'Nhap thong tin giao hang', 'Gui don va cho shop xac nhan']
+const steps = ['Chọn món yêu thích', 'Nhập thông tin giao hàng', 'Gửi đơn và chờ shop xác nhận']
 
 export function HomePage() {
   return (
@@ -25,19 +28,19 @@ export function HomePage() {
         <div>
           <img className="hero-logo" src={logo} alt="MHStore" />
           <span>MHStore</span>
-          <h1>Mon ngon dong lanh cho bua an nhanh gon tai nha</h1>
-          <p>Chon mon, tao gio hang va thanh toan nhanh bang SePay hoac gui don qua Zalo.</p>
+          <h1>Món ngon đông lạnh cho bữa ăn nhanh gọn tại nhà</h1>
+          <p>Chọn món, tạo giỏ hàng và thanh toán nhanh bằng SePay hoặc gửi đơn qua Zalo.</p>
           <div className="hero-actions">
-            <Link className="hero-action" to="/menu">Xem san pham</Link>
-            <Link className="hero-secondary-action" to="/cart">Den gio hang</Link>
+            <Link className="hero-action" to="/menu">Xem sản phẩm</Link>
+            <Link className="hero-secondary-action" to="/cart">Đến giỏ hàng</Link>
           </div>
         </div>
       </section>
 
-      <section className="home-section home-feature-grid" aria-label="Diem noi bat">
+      <section className="home-section home-feature-grid" aria-label="Điểm nổi bật">
         {features.map((feature) => (
           <article key={feature.title}>
-            <span>MH</span>
+            <span>{feature.label}</span>
             <h2>{feature.title}</h2>
             <p>{feature.description}</p>
           </article>
@@ -46,9 +49,9 @@ export function HomePage() {
 
       <section className="home-section home-steps" aria-labelledby="home-steps-title">
         <div>
-          <span>Quy trinh</span>
-          <h2 id="home-steps-title">Dat mon nhanh trong 3 buoc</h2>
-          <p>Khach co the mua truc tiep mot mon hoac them nhieu mon vao gio hang roi dat mot lan.</p>
+          <span>Quy trình</span>
+          <h2 id="home-steps-title">Đặt món nhanh trong 3 bước</h2>
+          <p>Khách có thể mua trực tiếp một món hoặc thêm nhiều món vào giỏ hàng rồi đặt một lần.</p>
         </div>
         <ol>
           {steps.map((step) => (

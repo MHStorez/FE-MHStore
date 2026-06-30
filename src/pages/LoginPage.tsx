@@ -20,19 +20,19 @@ export function LoginPage({ apiBaseUrl }: LoginPageProps) {
 
     try {
       const session = await login(apiBaseUrl, username, password)
-      toast.success('Dang nhap thanh cong')
+      toast.success('Đăng nhập thành công')
       navigate(session.role === 'Admin' ? '/admin' : '/')
     } catch {
-      toast.error('Dang nhap sai')
-      setMessage('Dang nhap sai hoac tai khoan chua ton tai.')
+      toast.error('Đăng nhập sai')
+      setMessage('Đăng nhập sai hoặc tài khoản chưa tồn tại.')
     }
   }
 
   return (
     <main className="auth-shell">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <span>Chu quan</span>
-        <h1>Dang nhap</h1>
+        <span>Chủ quán</span>
+        <h1>Đăng nhập</h1>
         <label>
           Username
           <input value={username} onChange={(event) => setUsername(event.target.value)} />
@@ -45,9 +45,9 @@ export function LoginPage({ apiBaseUrl }: LoginPageProps) {
             onChange={(event) => setPassword(event.target.value)}
           />
         </label>
-        <button type="submit">Dang nhap</button>
+        <button type="submit">Đăng nhập</button>
         {message ? <p className="checkout-message">{message}</p> : null}
-        <Link to="/register">Tao tai khoan moi</Link>
+        <Link to="/register">Tạo tài khoản mới</Link>
       </form>
     </main>
   )

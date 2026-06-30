@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { Product } from '../types'
 import { formatCurrency } from '../utils/format'
+import { getProductImage, getProductImages, getProductStock, isProductInStock } from '../utils/productImages'
 import { fetchProduct } from '../utils/products'
 
 type ProductDetailPageProps = {
@@ -12,9 +13,6 @@ type ProductDetailPageProps = {
   onIncrement: (productId: string) => void
   onDecrement: (productId: string) => void
 }
-
-const fallbackImage =
-  'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=80'
 
 export function ProductDetailPage({
   apiBaseUrl,
@@ -34,7 +32,7 @@ export function ProductDetailPage({
 
     const loadProduct = async () => {
       if (!productId) {
-        setNotice('Khong tim thay ma san pham.')
+        setNotice('Không tìm thấy mã sản phẩm.')
         setIsLoading(false)
         return
       }
@@ -50,7 +48,7 @@ export function ProductDetailPage({
         }
       } catch {
         if (isMounted) {
-          setNotice('Khong tai duoc chi tiet mon. Mon co the da ngung ban.')
+          setNotice('Không tải được chi tiết món. Món có thể đã ngừng bán.')
           setProduct(null)
         }
       } finally {
@@ -70,7 +68,7 @@ export function ProductDetailPage({
   if (isLoading) {
     return (
       <main className="shop-shell single-column">
-        <div className="loading-state">Dang tai chi tiet mon...</div>
+        <div className="loading-state">Đang tải chi tiết món...</div>
       </main>
     )
   }
@@ -79,30 +77,45 @@ export function ProductDetailPage({
     return (
       <main className="shop-shell single-column">
         {notice ? <p className="api-notice">{notice}</p> : null}
-        <Link className="hero-action" to="/menu">Quay lai menu</Link>
+        <Link className="hero-action" to="/menu">Quay lại menu</Link>
       </main>
     )
   }
 
-  const isAvailable = product.isAvailable ?? true
+  const stock = getProductStock(product)
+  const isAvailable = isProductInStock(product)
+  const images = getProductImages(product)
   const quantity = quantityByProductId.get(product.id) ?? 0
+  const canIncrement = isAvailable && quantity < stock
 
   return (
     <main className="shop-shell single-column">
       <article className="product-detail-card">
-        <img src={product.imageUrl || fallbackImage} alt={product.name} />
+        <div className="product-detail-media">
+          <img src={getProductImage(product)} alt={product.name} />
+          {images.length > 1 ? (
+            <div className="product-detail-thumbs" aria-label="Ảnh sản phẩm">
+              {images.map((imageUrl) => (
+                <img key={imageUrl} src={imageUrl} alt="" />
+              ))}
+            </div>
+          ) : null}
+        </div>
         <div className="product-detail-body">
-          <Link className="detail-link" to="/menu">← Quay lai menu</Link>
-          <span>{product.category || 'Khac'}</span>
+          <Link className="detail-link" to="/menu">← Quay lại menu</Link>
+          <span>{product.category || 'Khác'}</span>
           <h1>{product.name}</h1>
           {product.description ? <p>{product.description}</p> : null}
+          <em className={isAvailable ? 'stock-badge' : 'stock-badge out'}>
+            {isAvailable ? `Còn ${stock}` : 'Hết hàng'}
+          </em>
           <strong>{formatCurrency(product.price)}</strong>
           <div className="product-detail-actions">
             {quantity > 0 ? (
-              <div className="quantity-stepper" aria-label={`So luong ${product.name}`}>
+              <div className="quantity-stepper" aria-label={`Số lượng ${product.name}`}>
                 <button type="button" onClick={() => onDecrement(product.id)}>-</button>
                 <span>{quantity}</span>
-                <button type="button" onClick={() => onIncrement(product.id)}>+</button>
+                <button type="button" disabled={!canIncrement} onClick={() => onIncrement(product.id)}>+</button>
               </div>
             ) : (
               <button
@@ -111,7 +124,7 @@ export function ProductDetailPage({
                 disabled={!isAvailable}
                 onClick={() => onAdd(product)}
               >
-                Them vao gio
+                Thêm vào giỏ
               </button>
             )}
             <button

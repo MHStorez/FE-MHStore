@@ -21,11 +21,11 @@ export function RegisterPage({ apiBaseUrl }: RegisterPageProps) {
 
     try {
       await register(apiBaseUrl, username, password, fullName)
-      toast.success('Da tao tai khoan')
+      toast.success('Đã tạo tài khoản')
       navigate('/')
     } catch {
-      toast.error('Chua tao duoc tai khoan')
-      setMessage('Chua tao duoc tai khoan. Kiem tra username/password.')
+      toast.error('Chưa tạo được tài khoản')
+      setMessage('Chưa tạo được tài khoản. Kiểm tra username/password.')
     }
   }
 
@@ -33,9 +33,9 @@ export function RegisterPage({ apiBaseUrl }: RegisterPageProps) {
     <main className="auth-shell">
       <form className="auth-card" onSubmit={handleSubmit}>
         <span>MHStore</span>
-        <h1>Dang ky</h1>
+        <h1>Đăng ký</h1>
         <label>
-          Ho ten
+          Họ tên
           <input value={fullName} onChange={(event) => setFullName(event.target.value)} />
         </label>
         <label>
@@ -50,9 +50,9 @@ export function RegisterPage({ apiBaseUrl }: RegisterPageProps) {
             onChange={(event) => setPassword(event.target.value)}
           />
         </label>
-        <button type="submit">Tao tai khoan</button>
+        <button type="submit">Tạo tài khoản</button>
         {message ? <p className="checkout-message">{message}</p> : null}
-        <Link to="/login">Da co tai khoan</Link>
+        <Link to="/login">Đã có tài khoản</Link>
       </form>
     </main>
   )

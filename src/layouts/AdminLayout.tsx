@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import logo from '../assets/logo.png'
+import logo from '../assets/MHStoreLogo.png'
 import { clearAuthSession } from '../utils/auth'
 
 export function AdminLayout() {
@@ -16,17 +16,18 @@ export function AdminLayout() {
         <div className="admin-brand">
           <img className="brand-logo" src={logo} alt="MHStore" />
           <div>
-            <strong>MHStore Chu quan</strong>
-            <span>Quan ly ban hang</span>
+            <strong>MHStore Chủ quán</strong>
+            <span>Quản lý bán hàng</span>
           </div>
         </div>
-        <nav className="admin-nav" aria-label="Chu quan navigation">
+        <nav className="admin-nav" aria-label="Điều hướng quản trị">
           <NavLink to="/admin" end>Dashboard</NavLink>
-          <NavLink to="/admin/products">Mon an</NavLink>
-          <NavLink to="/admin/orders">Don hang</NavLink>
+          <NavLink to="/admin/products">Món ăn</NavLink>
+          <NavLink to="/admin/categories">Loại món</NavLink>
+          <NavLink to="/admin/orders">Đơn hàng</NavLink>
         </nav>
         <button type="button" className="admin-logout" onClick={handleLogout}>
-          Dang xuat
+          Đăng xuất
         </button>
       </aside>
       <div className="admin-content">

@@ -36,25 +36,25 @@ export function MenuPage({
     <main className="shop-shell single-column">
       <section className="menu-section" aria-labelledby="menu-title">
         <div className="section-heading">
-          <span>Thuc don hom nay</span>
-          <h1 id="menu-title">Chon mon cho gio hang cua ban</h1>
-          <p>Gia tam tinh duoc cap nhat theo san pham trong he thong.</p>
+          <span>Thực đơn hôm nay</span>
+          <h1 id="menu-title">Chọn món cho giỏ hàng của bạn</h1>
+          <p>Giá tạm tính được cập nhật theo sản phẩm trong hệ thống.</p>
         </div>
 
         {apiNotice ? <p className="api-notice">{apiNotice}</p> : null}
 
         <div className="menu-toolbar">
           <label>
-            Tim mon
+            Tìm món
             <input
               value={searchQuery}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Nhap ten mon..."
+              placeholder="Nhập tên món..."
             />
           </label>
         </div>
 
-        <div className="category-tabs" role="tablist" aria-label="Loc danh muc">
+        <div className="category-tabs" role="tablist" aria-label="Lọc danh mục">
           <button
             type="button"
             role="tab"
@@ -79,7 +79,7 @@ export function MenuPage({
         </div>
 
         {isLoading ? (
-          <div className="loading-state">Dang tai san pham...</div>
+          <div className="loading-state">Đang tải sản phẩm...</div>
         ) : (
           <div className="product-grid">
             {visibleProducts.map((product) => (
@@ -94,7 +94,7 @@ export function MenuPage({
               />
             ))}
             {visibleProducts.length === 0 ? (
-              <div className="empty-admin-state">Khong tim thay mon phu hop.</div>
+              <div className="empty-admin-state">Không tìm thấy món phù hợp.</div>
             ) : null}
           </div>
         )}

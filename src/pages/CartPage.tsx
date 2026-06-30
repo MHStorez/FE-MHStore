@@ -6,7 +6,7 @@ type CartPageProps = {
   customer: CustomerInfo
   apiBaseUrl: string
   zaloPhone: string
-  onCustomerChange: (field: keyof CustomerInfo, value: string) => void
+  onCustomerChange: (customer: CustomerInfo) => void
   onIncrement: (productId: string) => void
   onDecrement: (productId: string) => void
   onRemove: (productId: string) => void

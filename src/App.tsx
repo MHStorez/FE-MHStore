@@ -7,6 +7,7 @@ import { BuyNowModal } from './components/BuyNowModal'
 import { PaymentResult } from './components/PaymentResult'
 import { AdminLayout } from './layouts/AdminLayout'
 import { PublicLayout } from './layouts/PublicLayout'
+import { AdminCategories } from './pages/AdminCategories'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { AdminProducts } from './pages/AdminProducts'
 import { CartPage } from './pages/CartPage'
@@ -17,6 +18,7 @@ import { ProductDetailPage } from './pages/ProductDetailPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import type { CartItem, Category, CustomerInfo, Product } from './types'
+import { getProductStock, isProductInStock } from './utils/productImages'
 import { fetchCategories, fetchProducts } from './utils/products'
 
 const rawApiBaseUrl = import.meta.env.VITE_API_URL ?? ''
@@ -33,7 +35,10 @@ function App() {
     name: '',
     phone: '',
     address: '',
+    latitude: null,
+    longitude: null,
     note: '',
+    addressReferenceId: '',
   })
   const [buyNowProduct, setBuyNowProduct] = useState<Product | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -81,11 +86,11 @@ function App() {
         }
 
         setProducts(apiProducts)
-        setApiNotice(apiProducts.length === 0 ? 'Menu hien chua co mon phu hop.' : '')
+        setApiNotice(apiProducts.length === 0 ? 'Menu hiện chưa có món phù hợp.' : '')
       } catch {
         if (isMounted) {
           setProducts([])
-          setApiNotice('Chua ket noi duoc API. Vui long kiem tra backend.')
+          setApiNotice('Chưa kết nối được API. Vui lòng kiểm tra backend.')
         }
       } finally {
         if (isMounted) {
@@ -111,13 +116,24 @@ function App() {
   )
 
   const addToCart = (product: Product) => {
-    toast.success(`Da them ${product.name} vao gio`)
+    if (!isProductInStock(product)) {
+      toast.error(`${product.name} đang hết hàng`)
+      return
+    }
+
     setCartItems((currentItems) => {
       const existingItem = currentItems.find(
         (item) => item.product.id === product.id,
       )
+      const stock = getProductStock(product)
 
       if (existingItem) {
+        if (existingItem.quantity >= stock) {
+          toast.error(`${product.name} chỉ còn ${stock} món`)
+          return currentItems
+        }
+
+        toast.success(`Đã thêm ${product.name} vào giỏ`)
         return currentItems.map((item) =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -125,21 +141,35 @@ function App() {
         )
       }
 
+      toast.success(`Đã thêm ${product.name} vào giỏ`)
       return [...currentItems, { product, quantity: 1 }]
     })
   }
 
   const buyNow = (product: Product) => {
+    if (!isProductInStock(product)) {
+      toast.error(`${product.name} đang hết hàng`)
+      return
+    }
+
     setBuyNowProduct(product)
   }
 
   const incrementCartItem = (productId: string) => {
     setCartItems((currentItems) =>
-      currentItems.map((item) =>
-        item.product.id === productId
-          ? { ...item, quantity: item.quantity + 1 }
-          : item,
-      ),
+      currentItems.map((item) => {
+        if (item.product.id !== productId) {
+          return item
+        }
+
+        const stock = getProductStock(item.product)
+        if (item.quantity >= stock) {
+          toast.error(`${item.product.name} chỉ còn ${stock} món`)
+          return item
+        }
+
+        return { ...item, quantity: item.quantity + 1 }
+      }),
     )
   }
 
@@ -161,12 +191,6 @@ function App() {
     )
   }
 
-  const updateCustomer = (field: keyof CustomerInfo, value: string) => {
-    setCustomer((currentCustomer) => ({
-      ...currentCustomer,
-      [field]: value,
-    }))
-  }
 
   return (
     <>
@@ -214,7 +238,7 @@ function App() {
                 customer={customer}
                 apiBaseUrl={apiBaseUrl}
                 zaloPhone={zaloPhone}
-                onCustomerChange={updateCustomer}
+                onCustomerChange={setCustomer}
                 onIncrement={incrementCartItem}
                 onDecrement={decrementCartItem}
                 onRemove={removeCartItem}
@@ -238,6 +262,7 @@ function App() {
           <Route element={<AdminLayout />}>
             <Route path="admin" element={<AdminDashboard apiBaseUrl={apiBaseUrl} />} />
             <Route path="admin/products" element={<AdminProducts apiBaseUrl={apiBaseUrl} />} />
+            <Route path="admin/categories" element={<AdminCategories apiBaseUrl={apiBaseUrl} />} />
             <Route path="admin/orders" element={<AdminOrders apiBaseUrl={apiBaseUrl} />} />
           </Route>
         </Route>

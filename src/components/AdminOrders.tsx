@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { OrderChannel, OrderStatus, PaymentMethod, PaymentStatus, SavedOrder } from '../types'
 import { formatCurrency } from '../utils/format'
 import {
@@ -69,8 +69,11 @@ export function AdminOrders({ apiBaseUrl }: AdminOrdersProps) {
   const [notice, setNotice] = useState('')
   const [updatingOrderId, setUpdatingOrderId] = useState('')
 
-  const loadOrders = async (nextFilters = filters) => {
-    setIsLoading(true)
+  const loadOrders = useCallback(async (nextFilters = filters, showLoading = true) => {
+    if (showLoading) {
+      setIsLoading(true)
+    }
+
     setNotice('')
 
     try {
@@ -82,10 +85,32 @@ export function AdminOrders({ apiBaseUrl }: AdminOrdersProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [apiBaseUrl, filters])
 
   useEffect(() => {
-    void loadOrders(emptyFilters)
+    let isMounted = true
+
+    fetchOrders(apiBaseUrl, emptyFilters)
+      .then((nextOrders) => {
+        if (isMounted) {
+          setOrders(nextOrders)
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setNotice('Chưa tải được danh sách đơn. Kiểm tra backend và database.')
+          setOrders([])
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
   }, [apiBaseUrl])
 
   const pendingCount = orders.filter((order) => order.orderStatus === 'PendingConfirmation' || order.status === 'PendingConfirmation').length

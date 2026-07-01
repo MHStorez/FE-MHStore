@@ -21,8 +21,8 @@ import type { CartItem, Category, CustomerInfo, Product } from './types'
 import { getProductStock, isProductInStock } from './utils/productImages'
 import { fetchCategories, fetchProducts } from './utils/products'
 
-const rawApiBaseUrl = import.meta.env.VITE_API_URL ?? ''
-const apiBaseUrl = rawApiBaseUrl.replace(/\/$/, '')
+const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL ?? ''
+const apiBaseUrl = rawApiBaseUrl.replace(/\/+$/, '')
 const zaloPhone = import.meta.env.VITE_ZALO_PHONE ?? '0334140131'
 
 function App() {

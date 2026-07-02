@@ -15,7 +15,6 @@ import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { MenuPage } from './pages/MenuPage'
 import { ProductDetailPage } from './pages/ProductDetailPage'
-import { RegisterPage } from './pages/RegisterPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import type { CartItem, Category, CustomerInfo, Product } from './types'
 import { getProductStock, isProductInStock } from './utils/productImages'
@@ -255,7 +254,7 @@ function App() {
             element={<PaymentResult onBackToShop={() => window.location.assign('/')} />}
           />
           <Route path="login" element={<LoginPage apiBaseUrl={apiBaseUrl} />} />
-          <Route path="register" element={<RegisterPage apiBaseUrl={apiBaseUrl} />} />
+          <Route path="register" element={<Navigate to="/login" replace />} />
         </Route>
 
         <Route element={<ProtectedRoute />}>

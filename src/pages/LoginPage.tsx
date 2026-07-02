@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { login } from '../utils/account'
 
@@ -47,7 +47,6 @@ export function LoginPage({ apiBaseUrl }: LoginPageProps) {
         </label>
         <button type="submit">Đăng nhập</button>
         {message ? <p className="checkout-message">{message}</p> : null}
-        <Link to="/register">Tạo tài khoản mới</Link>
       </form>
     </main>
   )
